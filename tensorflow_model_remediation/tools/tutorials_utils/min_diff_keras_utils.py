@@ -29,15 +29,17 @@ def download_and_process_civil_comments_data():
   # Download data.
   toxicity_data_url = 'https://storage.googleapis.com/civil_comments_dataset/'
   train_csv_file = tf.keras.utils.get_file(
-      'train_df_processed.csv', toxicity_data_url + 'train_df_processed.csv')
+      'train_df_processed.csv', f'{toxicity_data_url}train_df_processed.csv')
   validate_csv_file = tf.keras.utils.get_file(
       'validate_df_processed.csv',
-      toxicity_data_url + 'validate_df_processed.csv')
+      f'{toxicity_data_url}validate_df_processed.csv',
+  )
 
   # Get validation data as TFRecords.
   validate_tfrecord_file = tf.keras.utils.get_file(
       'validate_tf_processed.tfrecord',
-      toxicity_data_url + 'validate_tf_processed.tfrecord')
+      f'{toxicity_data_url}validate_tf_processed.tfrecord',
+  )
 
   # Read data into Pandas DataFrame.
   data_train = pd.read_csv(train_csv_file)

@@ -153,46 +153,26 @@ class AssertSameStructureTest(tf.test.TestCase):
 
     struct1_str = "{'a': 'a', 'b': 'b', 'c': 'c'}"
     bad_dict = "not a dict"
-    with self.assertRaisesRegex(
-        ValueError,
-        self._err_msg_intro_regex_template.format(struct1_str, bad_dict) +
-        "{}.*is a dict.*{}.*is not".format(struct1_str, bad_dict)):
+    with self.assertRaisesRegex(ValueError, f"{self._err_msg_intro_regex_template.format(struct1_str, bad_dict)}{struct1_str}.*is a dict.*{bad_dict}.*is not"):
       structure_utils._assert_same_min_diff_structure(struct1, bad_dict)
     # Assert also raises in reverse order.
-    with self.assertRaisesRegex(
-        ValueError,
-        self._err_msg_intro_regex_template.format(bad_dict, struct1_str) +
-        "{}.*is a dict.*{}.*is not".format(struct1_str, bad_dict)):
+    with self.assertRaisesRegex(ValueError, f"{self._err_msg_intro_regex_template.format(bad_dict, struct1_str)}{struct1_str}.*is a dict.*{bad_dict}.*is not"):
       structure_utils._assert_same_min_diff_structure(bad_dict, struct1)
 
     struct1_keys_str = r"\['a', 'b', 'c'\]"
     struct2_subset = {"a": "d", "b": "e"}
     struct2_subset_str = "{'a': 'd', 'b': 'e'}"
     struct2_subset_keys_str = r"\['a', 'b'\]"
-    with self.assertRaisesRegex(
-        ValueError,
-        self._err_msg_intro_regex_template.format(struct1_str,
-                                                  struct2_subset_str) +
-        "don't have the same set of keys.*{}.*{}".format(
-            struct1_keys_str, struct2_subset_keys_str)):
+    with self.assertRaisesRegex(ValueError, f"{self._err_msg_intro_regex_template.format(struct1_str, struct2_subset_str)}don't have the same set of keys.*{struct1_keys_str}.*{struct2_subset_keys_str}"):
       structure_utils._assert_same_min_diff_structure(struct1, struct2_subset)
     # Assert also raises in reverse order.
-    with self.assertRaisesRegex(
-        ValueError,
-        self._err_msg_intro_regex_template.format(struct2_subset_str,
-                                                  struct1_str) +
-        "don't have the same set of keys.*{}.*{}".format(
-            struct2_subset_keys_str, struct1_keys_str)):
+    with self.assertRaisesRegex(ValueError, f"{self._err_msg_intro_regex_template.format(struct2_subset_str, struct1_str)}don't have the same set of keys.*{struct2_subset_keys_str}.*{struct1_keys_str}"):
       structure_utils._assert_same_min_diff_structure(struct2_subset, struct1)
 
     struct2_alt = {"a": "d", "b": "e", "f": "f"}
     struct2_alt_str = "{'a': 'd', 'b': 'e', 'f': 'f'}"
     struct2_alt_keys_str = r"\['a', 'b', 'f'\]"
-    with self.assertRaisesRegex(
-        ValueError,
-        self._err_msg_intro_regex_template.format(struct1_str, struct2_alt_str)
-        + "don't have the same set of keys.*{}.*{}".format(
-            struct1_keys_str, struct2_alt_keys_str)):
+    with self.assertRaisesRegex(ValueError, f"{self._err_msg_intro_regex_template.format(struct1_str, struct2_alt_str)}don't have the same set of keys.*{struct1_keys_str}.*{struct2_alt_keys_str}"):
       structure_utils._assert_same_min_diff_structure(struct1, struct2_alt)
 
   def testDictsWithTuplesHaveSameStructure(self):

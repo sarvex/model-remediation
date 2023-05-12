@@ -196,29 +196,18 @@ class MinDiffModel(tf.keras.Model):
             inputs=None, outputs=None, skip_init=True, **kwargs)
         tf.keras.Model.__init__(self, **kwargs)
       except Exception as e:
-        raise type(e)(
-            "There was a problem initializing the MinDiffModel subclass "
-            "instance. This was likely caused by:\n"
-            "  - The kwargs that were passed in were not valid according to "
-            "tf.keras.Model or a base of your custom Model.\n"
-            "  - Some args validation or requirement in your custom Model "
-            "__init__ method is too strict.\n"
-            "  - Your Model subclass is not passing through **kwargs (in "
-            "particular `skip_init`) to the super().__init__ invocation.\n"
-            "To fix this, either fix the args, loosen the requirements, or "
-            "make sure to pass **kwargs to calls with super. If this is not "
-            "possible, you may need to integrate MinDiff without using "
-            "MinDiffModel.\n"
-            "Error raised: {}".format(e))
+        raise type(
+            e
+        )(f"There was a problem initializing the MinDiffModel subclass instance. This was likely caused by:\n  - The kwargs that were passed in were not valid according to tf.keras.Model or a base of your custom Model.\n  - Some args validation or requirement in your custom Model __init__ method is too strict.\n  - Your Model subclass is not passing through **kwargs (in particular `skip_init`) to the super().__init__ invocation.\nTo fix this, either fix the args, loosen the requirements, or make sure to pass **kwargs to calls with super. If this is not possible, you may need to integrate MinDiff without using MinDiffModel.\nError raised: {e}"
+          )
     else:
       try:
         super(MinDiffModel, self).__init__(**kwargs)
       except Exception as e:
-        raise type(e)(
-            "There was a problem initializing the MinDiffModel instance. "
-            "This was likely caused by the kwargs that were passed in not "
-            "being valid according to tf.keras.Model.\n"
-            "Error raised: {}".format(e))
+        raise type(
+            e
+        )(f"There was a problem initializing the MinDiffModel instance. This was likely caused by the kwargs that were passed in not being valid according to tf.keras.Model.\nError raised: {e}"
+          )
 
     # Set _auto_track_sub_layers to true to ensure we track the
     # original_model and MinDiff layers.
@@ -243,8 +232,9 @@ class MinDiffModel(tf.keras.Model):
 
     if (predictions_transform is not None and
         not callable(predictions_transform)):
-      raise ValueError("`predictions_transform` must be callable if passed "
-                       "in, given: {}".format(predictions_transform))
+      raise ValueError(
+          f"`predictions_transform` must be callable if passed in, given: {predictions_transform}"
+      )
     self._predictions_transform = predictions_transform
 
   @property
@@ -499,9 +489,7 @@ class MinDiffModel(tf.keras.Model):
 
     predictions = self.predictions_transform(predictions)
     if not isinstance(predictions, tf.Tensor):
-      err_msg = (
-          "MinDiff `predictions` meant for calculating the `min_diff_loss` "
-          "must be a Tensor, given: {}\n".format(predictions))
+      err_msg = f"MinDiff `predictions` meant for calculating the `min_diff_loss` must be a Tensor, given: {predictions}\n"
       if self._predictions_transform is None:
         err_msg += (
             "This is due to the fact that `original_model` does not return "
@@ -695,10 +683,10 @@ class MinDiffModel(tf.keras.Model):
     try:
       _ = self._original_model.get_config()
     except Exception as e:
-      raise type(e)(
-          "MinDiffModel cannot create a config because `original_model` has "
-          "not implemented get_config() or has an error in its implementation."
-          "\nError raised: {}".format(e))
+      raise type(
+          e
+      )(f"MinDiffModel cannot create a config because `original_model` has not implemented get_config() or has an error in its implementation.\nError raised: {e}"
+        )
 
     # Try super.get_config if implemented. In most cases it will not be.
     try:
@@ -706,12 +694,12 @@ class MinDiffModel(tf.keras.Model):
     except NotImplementedError:
       config = {}
 
-    config.update({
+    config |= {
         "original_model": self._original_model,
         "loss": self._loss,
         "loss_weight": self._loss_weight,
         "name": self.name,
-    })
+    }
     if self._predictions_transform is not None:
       config["predictions_transform"] = dill.dumps(self._predictions_transform)
     return {k: v for k, v in config.items() if v is not None}
@@ -732,9 +720,7 @@ class MinDiffModel(tf.keras.Model):
     """
 
     def _deserialize_value(key, value):
-      if key == "predictions_transform":
-        return dill.loads(value)
-      return value  # No transformation applied.
+      return dill.loads(value) if key == "predictions_transform" else value
 
     return {k: _deserialize_value(k, v) for k, v in config.items()}
 
@@ -756,13 +742,13 @@ class MinDiffModel(tf.keras.Model):
 
 def _unique_metric_name(name, existing_metrics):
   """Returns a unique name given the existing metric names."""
-  existing_names = set([metric.name for metric in existing_metrics])
+  existing_names = {metric.name for metric in existing_metrics}
 
   proposed_name = name
   cnt = 1  # Start incrementing with 1.
   # Increment name suffix until the name is unique.
   while proposed_name in existing_names:
-    proposed_name = name + "_" + str(cnt)
+    proposed_name = f"{name}_{str(cnt)}"
     cnt += 1
 
   return proposed_name
@@ -774,11 +760,11 @@ def _create_unique_metrics(loss, existing_metrics):
     return tf.keras.metrics.Mean(
         _unique_metric_name("min_diff_loss", existing_metrics))
 
-  min_diff_metrics = []
-  for name in loss.keys():
-    min_diff_metrics.append(
-        tf.keras.metrics.Mean(
-            _unique_metric_name(name + "_min_diff_loss", existing_metrics)))
+  min_diff_metrics = [
+      tf.keras.metrics.Mean(
+          _unique_metric_name(f"{name}_min_diff_loss", existing_metrics))
+      for name in loss.keys()
+  ]
   return tf.nest.pack_sequence_as(loss, min_diff_metrics)
 
 
@@ -816,8 +802,8 @@ def _conform_weights_to_losses(loss, loss_weight, default_value):
     try:
       tf.nest.assert_same_structure(loss, loss_weight)
     except Exception as e:
-      raise ValueError("`loss` and `loss_weight` do not have matching "
-                       "structures: \n{}".format(e))
+      raise ValueError(
+          f"`loss` and `loss_weight` do not have matching structures: \n{e}")
 
   # At this point, we should be guaranteed that the two structures are dicts if
   # they are valid MinDiff structures. However, in case they are not, we assert
@@ -842,8 +828,8 @@ def _conform_weights_to_losses(loss, loss_weight, default_value):
   # don't correspond to losses.
   if not set(loss_weight.keys()) <= set(loss.keys()):
     raise ValueError(
-        "`loss_weight` contains keys that do not correspond to losses:"
-        "\n\nloss: {}\n\nloss_weight: {}".format(loss, loss_weight))
+        f"`loss_weight` contains keys that do not correspond to losses:\n\nloss: {loss}\n\nloss_weight: {loss_weight}"
+    )
 
   # Provide defaults for any missing weights.
   for key in loss.keys():
@@ -857,7 +843,7 @@ def _conform_weights_to_losses(loss, loss_weight, default_value):
     tf.nest.assert_same_structure(loss, loss_weight)
   except Exception as e:
     raise ValueError(
-        "`loss` and `loss_weight` (potentially with default weights added) "
-        "do not have matching structures: \n{}".format(e))
+        f"`loss` and `loss_weight` (potentially with default weights added) do not have matching structures: \n{e}"
+    )
 
   return loss_weight

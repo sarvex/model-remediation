@@ -122,11 +122,7 @@ class MMDLoss(base_loss.MinDiffLoss):
     pos_mean, neg_mean, pos_neg_mean = self._calculate_mean(
         predictions_kernel, normed_weights, pos_mask, neg_mask)
 
-    # MMD is actually the square root of the following quatity. However, the
-    # derivative of sqrt is easy to blow up when the value is close to 0. So we
-    # do not use that.
-    loss = pos_mean - 2 * pos_neg_mean + neg_mean
-    return loss
+    return pos_mean - 2 * pos_neg_mean + neg_mean
 
   @classmethod
   def from_config(cls, config):

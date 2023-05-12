@@ -107,7 +107,7 @@ class UCIDataTest(tf.test.TestCase):
 
     # Assert values are all dicts with exactly one column.
     for val in vals:
-      self.assertSetEqual(set(val.keys()), set(['col']))
+      self.assertSetEqual(set(val.keys()), {'col'})
     vals = [val['col'].numpy() for val in vals]
 
     self.assertAllClose(vals, expected_vals)
@@ -126,7 +126,7 @@ class UCIDataTest(tf.test.TestCase):
 
     # Assert values are all dicts with exactly one column.
     for val in vals:
-      self.assertSetEqual(set(val.keys()), set(['col']))
+      self.assertSetEqual(set(val.keys()), {'col'})
     vals = [val['col'].numpy() for val in vals]
 
     # These values should *NOT* be close because vals should be out of order
@@ -272,11 +272,12 @@ class UCIModelTest(tf.test.TestCase):
     expected_inputs.remove('income')
     expected_inputs.remove('race')
     expected_inputs.remove('fnlwgt')
-    self.assertSetEqual(
-        set([layer.name for layer in model.inputs]), set(expected_inputs))
+    self.assertSetEqual({layer.name
+                         for layer in model.inputs}, set(expected_inputs))
     self.assertIsInstance(model.layers[-1], tf.keras.layers.Dense)
 
   def testModelStructureWithCustomClass(self):
+
 
     class CustomClass(tf.keras.Model):
       pass  # No additional implementation needed for this test.
@@ -287,8 +288,8 @@ class UCIModelTest(tf.test.TestCase):
     expected_inputs.remove('income')
     expected_inputs.remove('race')
     expected_inputs.remove('fnlwgt')
-    self.assertSetEqual(
-        set([layer.name for layer in model.inputs]), set(expected_inputs))
+    self.assertSetEqual({layer.name
+                         for layer in model.inputs}, set(expected_inputs))
     self.assertIsInstance(model.layers[-1], tf.keras.layers.Dense)
 
   def testModelRunsOnUCIData(self):

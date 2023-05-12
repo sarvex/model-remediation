@@ -83,5 +83,4 @@ class AbsoluteCorrelationLoss(base_loss.MinDiffLoss):
         tf.sqrt(weighted_var_sensitive_group_labels + _EPSILON) *
         tf.sqrt(weighted_var_y_pred + _EPSILON))
 
-    loss = tf.abs(corr)
-    return loss
+    return tf.abs(corr)

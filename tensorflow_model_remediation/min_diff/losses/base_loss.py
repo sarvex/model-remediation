@@ -116,7 +116,7 @@ class MinDiffLoss(tf.keras.losses.Loss, abc.ABC):
     Returns:
       Scalar `min_diff_loss`.
     """
-    with tf.name_scope(self.name + '_inputs'):
+    with tf.name_scope(f'{self.name}_inputs'):
       loss = self.call(membership, predictions, sample_weight)
 
       # Calculate metrics.
@@ -199,8 +199,9 @@ class MinDiffLoss(tf.keras.losses.Loss, abc.ABC):
     # Raise error if any individual weights are negative.
     assert_op = tf.debugging.assert_non_negative(
         sample_weight,
-        message='`sample_weight` cannot contain any negative weights, given: {}'
-        .format(sample_weight))
+        message=
+        f'`sample_weight` cannot contain any negative weights, given: {sample_weight}',
+    )
     with tf.control_dependencies([assert_op]):  # Guarantee assert is run first.
       normed_weights = tf.math.divide_no_nan(sample_weight,
                                              tf.reduce_sum(sample_weight))
@@ -307,9 +308,7 @@ class MinDiffLoss(tf.keras.losses.Loss, abc.ABC):
     """
 
     def _serialize_value(key, value):
-      if key.endswith('transform'):
-        return dill.dumps(value)
-      return value  # No transformation applied
+      return dill.dumps(value) if key.endswith('transform') else value
 
     return {k: _serialize_value(k, v) for k, v in config.items()}
 
@@ -348,9 +347,7 @@ class MinDiffLoss(tf.keras.losses.Loss, abc.ABC):
     """
 
     def _deserialize_value(key, value):
-      if key.endswith('transform'):
-        return dill.loads(value)
-      return value  # No transformation applied
+      return dill.loads(value) if key.endswith('transform') else value
 
     return {k: _deserialize_value(k, v) for k, v in config.items()}
 
@@ -378,8 +375,9 @@ def _validate_transform(transform: types.TensorTransformType,
   if transform is None:
     return
   if not callable(transform):
-    raise ValueError('`{}` should be a callable instance that can be applied '
-                     'to a tensor, given: {}'.format(var_name, transform))
+    raise ValueError(
+        f'`{var_name}` should be a callable instance that can be applied to a tensor, given: {transform}'
+    )
 
 
 # This is the same function as the one used in tf.keras.Layer
@@ -388,7 +386,5 @@ def _to_snake_case(name):
   insecure = re.sub('([a-z])([A-Z])', r'\1_\2', intermediate).lower()
   # If the class is private the name starts with "_" which is not secure
   # for creating scopes. We prefix the name with "private" in this case.
-  if insecure[0] != '_':
-    return insecure
-  return 'private' + insecure
+  return insecure if insecure[0] != '_' else f'private{insecure}'
 
