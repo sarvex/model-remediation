@@ -141,9 +141,9 @@ def pack_min_diff_data(original_dataset: tf.data.Dataset,
   sensitive_dataset_present = sensitive_group_dataset is not None
   nonsensitive_dataset_present = nonsensitive_group_dataset is not None
   # Case where min_diff_dataset is set and the others are not.
-  set_to_use_min_diff_dataset = (
-      min_diff_dataset_present and
-      not (sensitive_dataset_present or nonsensitive_dataset_present))
+  set_to_use_min_diff_dataset = (min_diff_dataset_present
+                                 and not sensitive_dataset_present
+                                 and not nonsensitive_dataset_present)
   # Case where sensitive_group_dataset and nonsensitive_group_dataset are both
   # set and min_diff_dataset is not.
   set_to_construct_min_diff_dataset = ((sensitive_dataset_present and

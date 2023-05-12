@@ -792,7 +792,7 @@ class UnpackDataTest(tf.test.TestCase):
     self.assertIs(unpacked_tensors, tensors)
 
     # Arbitrary object.
-    obj = set(["a", "b", "c"])
+    obj = {"a", "b", "c"}
     packed_inputs = input_utils.MinDiffPackedInputs(obj, None)
     unpacked_obj = input_utils.unpack_original_inputs(packed_inputs)
     self.assertIs(unpacked_obj, obj)
@@ -814,7 +814,7 @@ class UnpackDataTest(tf.test.TestCase):
     self.assertIs(tensors, unpacked_tensors)
 
     # Arbitrary object.
-    obj = set(["a", "b", "c"])
+    obj = {"a", "b", "c"}
     unpacked_obj = input_utils.unpack_original_inputs(obj)
     self.assertIs(obj, unpacked_obj)
 
@@ -835,7 +835,7 @@ class UnpackDataTest(tf.test.TestCase):
     self.assertIs(unpacked_tensors, tensors)
 
     # Arbitrary object.
-    obj = set(["a", "b", "c"])
+    obj = {"a", "b", "c"}
     packed_inputs = input_utils.MinDiffPackedInputs(None, obj)
     unpacked_obj = input_utils.unpack_min_diff_data(packed_inputs)
     self.assertIs(unpacked_obj, obj)
@@ -860,7 +860,7 @@ class UnpackDataTest(tf.test.TestCase):
     self.assertIsNone(unpacked_tensors)
 
     # Arbitrary object.
-    obj = set(["a", "b", "c"])
+    obj = {"a", "b", "c"}
     unpacked_obj = input_utils.unpack_min_diff_data(obj)
     self.assertIsNone(unpacked_obj)
 

@@ -88,9 +88,8 @@ def get_uci_data(split='train', sample=None):
   Returns:
     A DataFrame containing UCI income dataset examples.
   """
-  if split not in set(['train', 'test']):
-    raise ValueError(
-        "split must be one of 'train' or 'test', given: {}".format(split))
+  if split not in {'train', 'test'}:
+    raise ValueError(f"split must be one of 'train' or 'test', given: {split}")
   suffix = 'data' if split == 'train' else 'test'
   uci_train_url = _UCI_DATA_URL_TEMPLATE.format(suffix)
   return _get_uci_data_from_url(uci_train_url, sample=sample)

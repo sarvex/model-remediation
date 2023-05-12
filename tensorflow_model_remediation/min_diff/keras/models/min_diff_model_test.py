@@ -124,9 +124,7 @@ class MinDiffModelTest(tf.test.TestCase):
 
     # Raises an error if the parameter passed in is not callable.
     bad_fn = "<not callable>"
-    with self.assertRaisesRegex(
-        ValueError,
-        "predictions_transform.*must be callable.*{}".format(bad_fn)):
+    with self.assertRaisesRegex(ValueError, f"predictions_transform.*must be callable.*{bad_fn}"):
       _ = min_diff_model.MinDiffModel(
           tf.keras.Sequential(), DummyLoss(), predictions_transform=bad_fn)
 
@@ -154,10 +152,8 @@ class MinDiffModelTest(tf.test.TestCase):
     model = min_diff_model.MinDiffModel(original_model, DummyLoss())
     model = min_diff_model.MinDiffModel(model, DummyLoss())
     metric_names = [metric.name for metric in model.metrics]
-    self.assertSetEqual(
-        set(metric_names), set(["min_diff_loss", "min_diff_loss_1"]))
+    self.assertSetEqual(set(metric_names), {"min_diff_loss", "min_diff_loss_1"})
 
-    # Test with CustomModel that has colliding metric names.
     class CustomModel(tf.keras.Sequential):
 
       def __init__(self, *args, **kwargs):
@@ -397,9 +393,7 @@ class MinDiffModelTest(tf.test.TestCase):
     # Mock original_model's call function.
 
     def _mock_loss(x, **kwargs):
-      if x[0] == 200.0:
-        return predictions1
-      return predictions2
+      return predictions1 if x[0] == 200.0 else predictions2
 
     original_model.call = mock.MagicMock(
         side_effect=_mock_loss)
@@ -506,12 +500,12 @@ class MinDiffModelTest(tf.test.TestCase):
 
     # Evaluate with min_diff_data.
     output_metrics = model.test_step(iter(self.min_diff_dataset).get_next())
-    self.assertSetEqual(
-        set(output_metrics.keys()), set(["loss", "acc", "min_diff_loss"]))
+    self.assertSetEqual(set(output_metrics.keys()),
+                        {"loss", "acc", "min_diff_loss"})
 
     # Evaluate without min_diff_data.
     output_metrics = model.test_step(iter(self.original_dataset).get_next())
-    self.assertSetEqual(set(output_metrics.keys()), set(["loss", "acc"]))
+    self.assertSetEqual(set(output_metrics.keys()), {"loss", "acc"})
 
   def testMultipleApplicationsEvalOutputs(self):
     original_model = tf.keras.Sequential(
@@ -528,11 +522,12 @@ class MinDiffModelTest(tf.test.TestCase):
         iter(self.multi_min_diff_dataset).get_next())
     self.assertSetEqual(
         set(output_metrics.keys()),
-        set(["loss", "acc", "k1_min_diff_loss", "k2_min_diff_loss"]))
+        {"loss", "acc", "k1_min_diff_loss", "k2_min_diff_loss"},
+    )
 
     # Evaluate without min_diff_data.
     output_metrics = model.test_step(iter(self.original_dataset).get_next())
-    self.assertSetEqual(set(output_metrics.keys()), set(["loss", "acc"]))
+    self.assertSetEqual(set(output_metrics.keys()), {"loss", "acc"})
 
   def testTrainingWithoutMinDiffDataRaisesError(self):
     original_model = tf.keras.Sequential()
@@ -631,13 +626,16 @@ class MinDiffModelTest(tf.test.TestCase):
   def testOverwritingUnpackingFunctions(self):
     original_model = tf.keras.Sequential()
 
+
+
     class CustomMinDiffModel(min_diff_model.MinDiffModel):
 
       def unpack_original_inputs(self, inputs):
-        return inputs + "custom_original_inputs"
+        return f"{inputs}custom_original_inputs"
 
       def unpack_min_diff_data(self, inputs):
-        return inputs + "min_diff_data"
+        return f"{inputs}min_diff_data"
+
 
     model = CustomMinDiffModel(original_model, DummyLoss())
 
@@ -663,8 +661,8 @@ class MinDiffModelTest(tf.test.TestCase):
     model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["acc"])
 
     history = model.fit(self.min_diff_dataset)
-    self.assertSetEqual(
-        set(history.history.keys()), set(["loss", "acc", "min_diff_loss"]))
+    self.assertSetEqual(set(history.history.keys()),
+                        {"loss", "acc", "min_diff_loss"})
 
     # Evaluate with min_diff_data.
     model.evaluate(self.min_diff_dataset)
@@ -686,7 +684,8 @@ class MinDiffModelTest(tf.test.TestCase):
     history = model.fit(self.multi_min_diff_dataset)
     self.assertSetEqual(
         set(history.history.keys()),
-        set(["loss", "acc", "k1_min_diff_loss", "k2_min_diff_loss"]))
+        {"loss", "acc", "k1_min_diff_loss", "k2_min_diff_loss"},
+    )
 
     # Evaluate with min_diff_data.
     model.evaluate(self.multi_min_diff_dataset)
@@ -705,8 +704,8 @@ class MinDiffModelTest(tf.test.TestCase):
     model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["acc"])
 
     history = model.fit(self.min_diff_dataset)
-    self.assertSetEqual(
-        set(history.history.keys()), set(["loss", "acc", "min_diff_loss"]))
+    self.assertSetEqual(set(history.history.keys()),
+                        {"loss", "acc", "min_diff_loss"})
 
     # Evaluate with min_diff_data.
     model.evaluate(self.min_diff_dataset)
@@ -729,7 +728,8 @@ class MinDiffModelTest(tf.test.TestCase):
     history = model.fit(self.multi_min_diff_dataset)
     self.assertSetEqual(
         set(history.history.keys()),
-        set(["loss", "acc", "k1_min_diff_loss", "k2_min_diff_loss"]))
+        {"loss", "acc", "k1_min_diff_loss", "k2_min_diff_loss"},
+    )
 
     # Evaluate with min_diff_data.
     model.evaluate(self.multi_min_diff_dataset)
@@ -758,9 +758,7 @@ class MinDiffModelTest(tf.test.TestCase):
 
     model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["acc"])
 
-    with self.assertRaisesRegex(
-        ValueError, "predictions.*must be a Tensor.*{}.*\n.*the provided"
-        ".*predictions_transform.*does not return a Tensor".format(bad_value)):
+    with self.assertRaisesRegex(ValueError, f"predictions.*must be a Tensor.*{bad_value}.*\n.*the provided.*predictions_transform.*does not return a Tensor"):
       _ = model.fit(self.min_diff_dataset)
 
   def testWithFunctionalMultiOutputModel(self):
@@ -789,8 +787,8 @@ class MinDiffModelTest(tf.test.TestCase):
     history = model.fit(self.min_diff_multi_output_dataset)
     self.assertSetEqual(
         set(history.history.keys()),
-        set(["loss", "y1_loss", "y1_acc", "y2_loss", "y2_acc",
-             "min_diff_loss"]))
+        {"loss", "y1_loss", "y1_acc", "y2_loss", "y2_acc", "min_diff_loss"},
+    )
 
     # Evaluate with min_diff_data.
     model.evaluate(self.min_diff_multi_output_dataset)
@@ -826,10 +824,16 @@ class MinDiffModelTest(tf.test.TestCase):
     history = model.fit(self.multi_min_diff_multi_output_dataset)
     self.assertSetEqual(
         set(history.history.keys()),
-        set([
-            "loss", "y1_loss", "y1_acc", "y2_loss", "y2_acc",
-            "k1_min_diff_loss", "k2_min_diff_loss"
-        ]))
+        {
+            "loss",
+            "y1_loss",
+            "y1_acc",
+            "y2_loss",
+            "y2_acc",
+            "k1_min_diff_loss",
+            "k2_min_diff_loss",
+        },
+    )
 
     # Evaluate with min_diff_data.
     model.evaluate(self.multi_min_diff_multi_output_dataset)
@@ -867,6 +871,7 @@ class MinDiffModelTest(tf.test.TestCase):
 
   def testCustomModelWithSequential(self):
 
+
     class CustomSequential(tf.keras.Sequential):
 
       def __init__(self, *args, **kwargs):
@@ -895,8 +900,8 @@ class MinDiffModelTest(tf.test.TestCase):
         run_eagerly=True)
 
     history = model.fit(self.min_diff_dataset)
-    self.assertSetEqual(
-        set(history.history.keys()), set(["loss", "acc", "min_diff_loss"]))
+    self.assertSetEqual(set(history.history.keys()),
+                        {"loss", "acc", "min_diff_loss"})
     # There are 10 batches so the custom train step should have been called 10
     # times.
     self.assertEqual(model.train_step_cnt, 10)
@@ -908,6 +913,7 @@ class MinDiffModelTest(tf.test.TestCase):
     model.evaluate(self.original_dataset)
 
   def testCustomModelWithFunctional(self):
+
 
     class CustomModel(tf.keras.Model):
 
@@ -938,8 +944,8 @@ class MinDiffModelTest(tf.test.TestCase):
         run_eagerly=True)
 
     history = model.fit(self.min_diff_dataset)
-    self.assertSetEqual(
-        set(history.history.keys()), set(["loss", "acc", "min_diff_loss"]))
+    self.assertSetEqual(set(history.history.keys()),
+                        {"loss", "acc", "min_diff_loss"})
     # There are 10 batches so the custom train step should have been called 10
     # times.
     self.assertEqual(model.train_step_cnt, 10)
@@ -1224,9 +1230,8 @@ class MinDiffModelTest(tf.test.TestCase):
 
     config = model.get_config()
 
-    self.assertSetEqual(
-        set(config.keys()),
-        set(["original_model", "loss", "loss_weight", "name"]))
+    self.assertSetEqual(set(config.keys()),
+                        {"original_model", "loss", "loss_weight", "name"})
 
     # Test building the model from the config.
     model_from_config = min_diff_model.MinDiffModel.from_config(config)
@@ -1246,9 +1251,8 @@ class MinDiffModelTest(tf.test.TestCase):
 
     config = model.get_config()
 
-    self.assertSetEqual(
-        set(config.keys()),
-        set(["original_model", "loss", "loss_weight", "name"]))
+    self.assertSetEqual(set(config.keys()),
+                        {"original_model", "loss", "loss_weight", "name"})
 
     self.assertDictEqual(config["loss"], loss)
     self.assertDictEqual(config["loss_weight"], loss_weight)
@@ -1262,6 +1266,7 @@ class MinDiffModelTest(tf.test.TestCase):
     self.assertDictEqual(model_from_config._loss_weight, loss_weight)
 
   def testConfigWithCustomBaseImplementation(self):
+
 
     class CustomModel(tf.keras.Model):
 
@@ -1289,7 +1294,8 @@ class MinDiffModelTest(tf.test.TestCase):
 
     self.assertSetEqual(
         set(config.keys()),
-        set(["original_model", "loss", "loss_weight", "name", "val"]))
+        {"original_model", "loss", "loss_weight", "name", "val"},
+    )
     self.assertEqual(config["val"], model.val)
     self.assertEqual(config["original_model"].val, original_model.val)
 

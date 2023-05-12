@@ -30,7 +30,7 @@ def _register_kernel_names(kernel_class, names):
   for name in names:
     _STRING_TO_KERNEL_DICT[name] = kernel_class
     if not name.endswith('_kernel'):
-      _STRING_TO_KERNEL_DICT[name + '_kernel'] = kernel_class
+      _STRING_TO_KERNEL_DICT[f'{name}_kernel'] = kernel_class
 
 
 _register_kernel_names(gaussian_kernel.GaussianKernel, ['gauss', 'gaussian'])
@@ -63,9 +63,9 @@ def _get_kernel(kernel: Union[base_kernel.MinDiffKernel, Text],
     lower_case_kernel = kernel.lower()
     if lower_case_kernel in _STRING_TO_KERNEL_DICT:
       return _STRING_TO_KERNEL_DICT[lower_case_kernel]()
-    raise ValueError('If {} is a string, it must be a (case-insensitive) '
-                     'match for one of the following supported values: {}. '
-                     'given: {}'.format(kernel_var_name,
-                                        _STRING_TO_KERNEL_DICT.keys(), kernel))
-  raise TypeError('{} must be either of type MinDiffKernel or string, given: '
-                  '{} (type: {})'.format(kernel_var_name, kernel, type(kernel)))
+    raise ValueError(
+        f'If {kernel_var_name} is a string, it must be a (case-insensitive) match for one of the following supported values: {_STRING_TO_KERNEL_DICT.keys()}. given: {kernel}'
+    )
+  raise TypeError(
+      f'{kernel_var_name} must be either of type MinDiffKernel or string, given: {kernel} (type: {type(kernel)})'
+  )

@@ -31,7 +31,7 @@ def _register_loss_names(loss_class, names):
   for name in names:
     _STRING_TO_LOSS_DICT[name] = loss_class
     if not name.endswith('_loss'):
-      _STRING_TO_LOSS_DICT[name + '_loss'] = loss_class
+      _STRING_TO_LOSS_DICT[f'{name}_loss'] = loss_class
 
 
 _register_loss_names(abs_corr_loss.AbsoluteCorrelationLoss,
@@ -68,9 +68,9 @@ def _get_loss(loss: Union[base_loss.MinDiffLoss, Text],
     lower_case_loss = loss.lower()
     if lower_case_loss in _STRING_TO_LOSS_DICT:
       return _STRING_TO_LOSS_DICT[lower_case_loss]()
-    raise ValueError('If {} is a string, it must be a (case-insensitive) '
-                     'match for one of the following supported values: {}. '
-                     'given: {}'.format(loss_var_name,
-                                        _STRING_TO_LOSS_DICT.keys(), loss))
-  raise TypeError('{} must be either of type MinDiffLoss or string, given: '
-                  '{} (type: {})'.format(loss_var_name, loss, type(loss)))
+    raise ValueError(
+        f'If {loss_var_name} is a string, it must be a (case-insensitive) match for one of the following supported values: {_STRING_TO_LOSS_DICT.keys()}. given: {loss}'
+    )
+  raise TypeError(
+      f'{loss_var_name} must be either of type MinDiffLoss or string, given: {loss} (type: {type(loss)})'
+  )

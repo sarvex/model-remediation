@@ -82,21 +82,18 @@ def _pack_min_diff_sequence_as(struct, flat_sequence):
   if _is_min_diff_element(struct):
     if len(flat_sequence) != 1:
       raise ValueError(
-          "The target structure is of type: {}\n\nHowever the input "
-          "structure is a sequence ({}) of length {}: {}.".format(
-              type(struct), type(flat_sequence), len(flat_sequence),
-              flat_sequence))
+          f"The target structure is of type: {type(struct)}\n\nHowever the input structure is a sequence ({type(flat_sequence)}) of length {len(flat_sequence)}: {flat_sequence}."
+      )
     return flat_sequence[0]
 
   if isinstance(struct, dict):
     ordered_keys = sorted(struct.keys())
     if len(flat_sequence) != len(ordered_keys):
       raise ValueError(
-          "Could not pack sequence. Dict had {} keys, but flat_sequence had {} "
-          "element(s).  Structure: {}, flat_sequence: {}.".format(
-              len(ordered_keys), len(flat_sequence), struct, flat_sequence))
+          f"Could not pack sequence. Dict had {len(ordered_keys)} keys, but flat_sequence had {len(flat_sequence)} element(s).  Structure: {struct}, flat_sequence: {flat_sequence}."
+      )
 
-    return {k: v for k, v in zip(ordered_keys, flat_sequence)}
+    return dict(zip(ordered_keys, flat_sequence))
 
   # If the code reaches here, then `struct` is not a valid MinDiff structure.
   # We call `validate_min_diff_structure` to raise the appropriate error.
@@ -170,8 +167,8 @@ def _is_min_diff_element(element, element_type=None):
   if element_type is not None:
     if not isinstance(element_type, type):
       raise TypeError(
-          "`element_type` should be a class corresponding to expected type. "
-          "Instead an object instance was given: {}".format(element_type))
+          f"`element_type` should be a class corresponding to expected type. Instead an object instance was given: {element_type}"
+      )
     # Return False if element is of the wrong type (if indicated).
     if not isinstance(element, element_type):
       return False
@@ -208,29 +205,29 @@ def validate_min_diff_structure(struct,
   if _is_min_diff_element(struct, element_type):
     return  # Valid single MinDiff element.
 
-  err_msg = "`{}` is not a recognized MinDiff structure.".format(struct_name)
+  err_msg = f"`{struct_name}` is not a recognized MinDiff structure."
   # If struct is not a min_diff_element, then it should be a dict. If not, raise
   # an error.
   if not isinstance(struct, dict):
     accepted_types_msg = "a single unnested element (or tuple)"
     if element_type is not None:
-      accepted_types_msg += " of type {}".format(element_type)
+      accepted_types_msg += f" of type {element_type}"
     accepted_types_msg += ", or a dict"
-    raise TypeError("{} It should have a type of one of: {}. Given: {}".format(
-        err_msg, accepted_types_msg, type(struct)))
+    raise TypeError(
+        f"{err_msg} It should have a type of one of: {accepted_types_msg}. Given: {type(struct)}"
+    )
 
   # Validate that keys are strings if struct is a dict.
-  if not all([isinstance(key, str) for key in struct.keys()]):
+  if not all(isinstance(key, str) for key in struct.keys()):
     raise ValueError(
-        "{} If `{}` is a dict, it must contain only string keys, given keys: {}"
-        .format(err_msg, struct_name, list(struct.keys())))
+        f"{err_msg} If `{struct_name}` is a dict, it must contain only string keys, given keys: {list(struct.keys())}"
+    )
 
   # Validate that values are all single MinDiff elements.
-  if not all([
+  if not all(
       _is_min_diff_element(element, element_type)
-      for element in struct.values()
-  ]):
+      for element in struct.values()):
     err_msg += "If it is a dict, it must be unnested"
     if element_type is not None:
-      err_msg += " and contain only elements of type {}".format(element_type)
-    raise ValueError("{}. Given: {}".format(err_msg, struct))
+      err_msg += f" and contain only elements of type {element_type}"
+    raise ValueError(f"{err_msg}. Given: {struct}")
